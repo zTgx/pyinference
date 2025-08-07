@@ -1,14 +1,16 @@
 
 from fastapi.responses import StreamingResponse
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
+import os
+
+os.environ["VLLM_USE_RAY"] = "0"
 
 engine_args = AsyncEngineArgs(
-    model="deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
-    tensor_parallel_size=2,  # 双GPU并行
-    max_model_len=8192,
+    model="gpt2",
+    tensor_parallel_size=1,
+    max_model_len=1024,
     gpu_memory_utilization=0.9,
-    quantization="gptq",     # 4-bit量化
-    enforce_eager=True       # 减少显存碎片[2](@ref)
+    enforce_eager=True
 )
 engine = AsyncLLMEngine.from_engine_args(engine_args)
 

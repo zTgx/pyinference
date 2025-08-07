@@ -18,11 +18,11 @@ from datetime import datetime
 import json
 from typing import Optional, List, Union, Dict, Any
 
-from .log import logger, log_system_info
-from .hf import initialize_model
-from .device import available_device
-from .args import args
-from .completion import do_completion
+from log import logger, log_system_info
+from hf import initialize_model
+from device import available_device
+from args import args
+from completion import do_completion
 
 device = available_device()
 
