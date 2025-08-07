@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+vllm
+huggingface_hub
+transformers
