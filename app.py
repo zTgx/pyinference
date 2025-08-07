@@ -3,20 +3,14 @@ from fastapi.security import APIKeyHeader
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
 from pydantic import BaseModel
-import os
-import asyncio
 from contextlib import asynccontextmanager
 
-import logging
 import torch
-import time
-import argparse
 import uvicorn
 from datetime import datetime
-import json
-from typing import Optional, List, Union, Dict, Any
+from typing import List, Dict, Any
+import requests
 
 from log import logger, log_system_info
 from hf import initialize_model
@@ -54,16 +48,11 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         logger.info("Shutting down application...")
-        global model, processor
-        if model is not None:
-            try:
-                del model
-                torch.cuda.empty_cache()
-                logger.info("Model unloaded and CUDA cache cleared")
-            except Exception as e:
-                logger.error(f"Error during cleanup: {str(e)}")
-        model = None
-        processor = None
+        try:
+            torch.cuda.empty_cache()
+            logger.info("Model unloaded and CUDA cache cleared")
+        except Exception as e:
+            logger.error(f"Error during cleanup: {str(e)}")
         logger.info("Shutdown complete")
 
 app = FastAPI(
@@ -82,8 +71,16 @@ app.add_middleware(
 
 @app.get("/v1/models", response_model=List[str])
 async def list_models():
-    """List available models"""
-    return List['xxx']
+    """List available models from Hugging Face Hub"""
+    API_URL = "https://huggingface.co/api/models"
+    params = {
+        "sort": "downloads",
+        "direction": -1,
+        "limit": 100
+    }
+    response = requests.get(API_URL, params=params)
+    models = [model["modelId"] for model in response.json()]
+    return models
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def generate(
@@ -95,7 +92,7 @@ async def generate(
 
     # await do_completion(request)
     
-    return {"text": output.outputs[0].text}
+    return {"text": "output"}
 
 
 @app.get("/health")
@@ -106,10 +103,8 @@ async def health_check():
 
     return {
         "status": "healthy",
-        "model_loaded": model is not None and processor is not None,
         "device": str(device),
         "cuda_available": torch.cuda.is_available(),
-        "quantization": args.quant if args.quant else "none",
         "cuda_device_count": torch.cuda.device_count() if torch.cuda.is_available() else 0,
         "timestamp": datetime.now().isoformat()
     }
