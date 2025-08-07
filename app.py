@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import torch
 import uvicorn
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 import requests
 
 from log import logger, log_system_info
