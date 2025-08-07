@@ -16,7 +16,7 @@ from log import logger, log_system_info
 from hf import initialize_model
 from device import available_device
 from args import args
-from completion import do_completion
+# from completion import do_completion
 
 device = available_device()
 
@@ -85,10 +85,10 @@ async def list_models():
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def generate(
     request: GenerateRequest,
-    api_key: str = Security(api_key_header)
+    # api_key: str = Security(api_key_header)
 ):
-    if api_key not in API_KEYS:
-        raise HTTPException(status_code=403, detail="Invalid API Key")
+    # if api_key not in API_KEYS:
+    #     raise HTTPException(status_code=403, detail="Invalid API Key")
 
     # await do_completion(request)
     
