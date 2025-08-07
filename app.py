@@ -30,6 +30,7 @@ api_key_header = APIKeyHeader(name="X-API-Key")
 API_KEYS = {"your-secret-key"}
 
 class GenerateRequest(BaseModel):
+    model: str
     prompt: str
     max_tokens: int = 512
     temperature: float = 0.7
