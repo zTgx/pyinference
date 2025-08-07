@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.security import APIKeyHeader
-from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
@@ -16,7 +15,7 @@ from log import logger, log_system_info
 from hf import initialize_model
 from device import available_device
 from args import args
-# from completion import do_completion
+from completion import do_completion
 
 device = available_device()
 
@@ -31,12 +30,8 @@ class GenerateRequest(BaseModel):
     stream: bool = False
 
 class ChatCompletionResponse(BaseModel):
-    id: str
-    object: str
-    created: int
     model: str
-    choices: List[Dict[str, Any]]
-    usage: Dict[str, int]
+    text: str
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -90,10 +85,17 @@ async def generate(
     # if api_key not in API_KEYS:
     #     raise HTTPException(status_code=403, detail="Invalid API Key")
 
-    # await do_completion(request)
-    
-    return {"text": "output"}
+    try:
+        generated_text = await do_completion(request)
 
+        return ChatCompletionResponse(
+            model=request.model,
+            text=generated_text
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
 @app.get("/health")
 async def health_check():

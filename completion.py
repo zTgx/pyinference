@@ -39,3 +39,11 @@ async def do_completion(request):
         sampling_params,
         request_id=f"req_{hash(request.prompt)}"
     )
+
+    for output in output:
+        prompt = output.prompt
+        generated_text = output.outputs[0].text
+        print(f"Prompt: {prompt!r}\nGenerated text: {generated_text!r}")
+        print("-" * 50)
+
+        return generated_text
